@@ -1,16 +1,16 @@
 %% Estimate background
 
 % vsrc = VideoReader('data/videos/20170201_120045.MOV');
-vsrc = VideoReader('C:\Users\Admin\Documents\GitHub\ground-pursuit\MATLAB\testcar_1.avi'); 
+vsrc = VideoReader('teleop1.avi'); 
 vsrc.CurrentTime = 0;
 
 se1 = strel('square', 5);
 se2 = strel('square', 3);
 
 frame = vsrc.readFrame();
-frames = zeros([size(frame), 50], 'uint8');
+frames = zeros([size(frame), 100], 'uint8');
 % bw = zeros([size(frame), 50]);
-skipTime = (vsrc.Duration - vsrc.CurrentTime) / 50;
+skipTime = (vsrc.Duration - vsrc.CurrentTime) / 100;
 
 for k = 1 : size(frames, 4)-1
     frames(:,:,:,k) = vsrc.readFrame();
