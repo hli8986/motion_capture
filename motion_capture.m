@@ -1,24 +1,21 @@
 %% Estimate background
 
-% vsrc = VideoReader('data/videos/20170201_120045.MOV');
-vsrc = VideoReader('teleop1.avi'); 
+% Read the video
+vsrc = VideoReader('your_video_file.avi'); 
 vsrc.CurrentTime = 0;
 
+% Construct structuring element for binary operations
 se1 = strel('square', 5);
 se2 = strel('square', 3);
 
+% Initialze parameters
 frame = vsrc.readFrame();
 frames = zeros([size(frame), 100], 'uint8');
-% bw = zeros([size(frame), 50]);
 skipTime = (vsrc.Duration - vsrc.CurrentTime) / 100;
 
+% Reduce the framrate for background saturation
 for k = 1 : size(frames, 4)-1
     frames(:,:,:,k) = vsrc.readFrame();
-%     bw(:,:,:,k) = vsrc.readFrame();
-%     [bw_mask, ~] = createMask1(bw(:,:,:,k));
-%     bw_mask = imclose(bw_mask, se1);
-%     bw_mask = imopen(bw_mask, se2); % Remove small bubbles to decrease noise
-%     bw(:,:,:,k) = bw_mask;
     vsrc.CurrentTime = vsrc.CurrentTime + skipTime;
     if mod(k, 10) == 0
         fprintf('Completed %d out of %d...\n', k, size(frames, 4))
@@ -26,6 +23,7 @@ for k = 1 : size(frames, 4)-1
 end
 fprintf('Done saving frames\n')
 
+% Obtain background with median values
 bg = median(frames, 4);
 figure, imshow(bg)
 
@@ -42,20 +40,21 @@ figure, histogram(err)
 % Pick a value between two hills as error minimum value
 
 %%
+% Set video players, one for masked video and one for orignial video
 maskPlayer = vision.VideoPlayer('Position', [1050, 200, 720, 760]);
 videoPlayer = vision.VideoPlayer('Position', [140, 200, 720, 760]);
         
-        
 bg_double = cast(bg(:,440:1130,3), 'double');
 vsrc.CurrentTime = 0;
-% show frames
-% figure
 
 nextId = 1;
 bboxes = cat(1, ones(1, 4));
 centroids = zeros(4, 3);
+
+% Start kalman filter with constant velocity
 kalmanFilter = configureKalmanFilter('ConstantVelocity', ...
     [0 0], [200, 50], [100, 25], 50);
+    
 tracks = repmat(struct(...
                 'id', nextId, ...
                 'bbox', ones(1,4), ...
@@ -71,7 +70,8 @@ for k = 1 : size(frames, 4)-1
     error = imclose(error, se2);
     error = imopen(error, se1);
     error = imfill(error, 'holes');
-
+    
+    % Locate the object and draw box for it
     stats = regionprops(logical(error), 'BoundingBox', 'Centroid');
     centroids = cat(1, stats.Centroid);
     bboxes = cat(1, stats.BoundingBox);
