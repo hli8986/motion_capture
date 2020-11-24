@@ -2,8 +2,7 @@
 %   (Do it only once. Save an image file)
 clear
 
-% filename = 'data/20170917_182446.MOV';
-filename = '/Users/hli8/Documents/MATLAB/motion_traking/testcar_1.avi';
+filename = 'Your_video_file_here.avi';
 v = VideoReader(filename);
 v.CurrentTime = 0;
 
@@ -17,27 +16,18 @@ while hasFrame(v)
     pause(dt - toc)
 end
 
-imwrite(frame, '/Users/hli8/Documents/MATLAB/motion_traking/testcar_extrinsic_2.jpg')
+imwrite(frame, 'image_name.jpg')
 
 %% Select image points by hand
 
-frame = imread('/Users/hli8/Documents/MATLAB/motion_traking/testcar_extrinsic_2.jpg');
+frame = imread('image_name.jpg');
 figure, imshow(frame)
 [x, y] = ginput();
 
 imagePoints = [x, y];
 imagePoints = [imagePoints; imagePoints(1, :)];
 
-% camera on back position
-% worldPoints = [10, 15, 0
-%                 10, 20, 0
-%                 10, 25, 0
-%                 10, 40, 0
-%                 -10, 40, 0
-%                 -10, 25, 0
-%                 -10, 20, 0
-%                 -10, 15, 0 ] * 304.8;
-
+% Define world points
 worldPoints = [3, 0, 0
                 3, 4, 0
                 3, 8, 0
@@ -51,16 +41,6 @@ worldPoints = [3, 0, 0
                 -3, 4, 0 
                 -3, 0, 0
                 3, 0, 0] * 30.48;
-
-% camera on front position
-% worldPoints = [-10, 25, 0
-%                 -10, 20, 0
-%                 -10, 15, 0
-%                 -10, 0, 0
-%                 10, 0, 0
-%                 10, 15, 0
-%                 10, 20, 0
-%                 10, 25, 0 ] * 304.8;
 
 %% Extrinsic calibration
 load('cameraParams.mat');
@@ -88,6 +68,8 @@ plotCamera('Size',10,'Orientation',worldOrientation,'Location',...
 hold off
  
 %% Animation
+% This is optional
+
 %   Click points on right subplot to see the projection on the court
 
 % clear
